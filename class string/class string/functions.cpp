@@ -2,8 +2,8 @@
 
 String::String()
 {
-	length = 1;
-	string = new char[length] {'\0'};
+	length = 0;
+	string = new char[length + 1] {'\0'};
 }
 
 String::~String()
@@ -11,19 +11,27 @@ String::~String()
 	delete[] string;
 }
 
-String::String(const char* str, size_t len)
+String::String(char ch)
 {
-	length = len;
+	length = 1;
 	string = new char[length + 1];
-	std::strcpy(string, str);
+	string[0] = ch;
+	string[1] = '\0';
 }
 
-//String::String(const char* str)
+//String::String(const char* str, size_t len)
 //{
-//	length = std::strlen(str);
+//	length = len;
 //	string = new char[length + 1];
 //	std::strcpy(string, str);
 //}
+
+String::String(const char* str)
+{
+	length = std::strlen(str);
+	string = new char[length + 1];
+	std::strcpy(string, str);
+}
 
 String::String(const String& rhs)
 {
@@ -67,15 +75,44 @@ String& String::operator=(const String& rhs)
 	return *this;
 }
 
+String& String::operator=(char ch)
+{
+	if (length < 1) {
+		delete[] string;
+		length = 1;
+		string = new char[length + 1];
+	}
+	length = 1;
+	string[0] = ch;
+	string[1] = '\0';
+	return *this;
+}
+
 String String::operator+(const String& rhs) const
 {
 	size_t newLength = length + rhs.length;
 	char* newStr = new char[newLength + 1];
 	std::strcpy(newStr, string);
 	std::strcat(newStr, rhs.string);
-	String result(newStr, newLength);
+	String result(newStr);
 	delete[] newStr;
 	return result;
+}
+
+String operator+(const char* lhs, const String& rhs)
+{
+	String str = lhs;
+	return str + rhs;
+}
+
+String String::operator+=(const String& rhs) const
+{
+	return *this + rhs;
+}
+
+String operator+=(const char* lhs, const String& rhs)
+{
+	return lhs + rhs;
 }
 
 bool String::operator==(const String& rhs) const
@@ -93,6 +130,16 @@ bool String::operator<(const String& rhs) const
 bool String::operator>(const String& rhs) const
 {
 	return std::strcmp(string, rhs.string) > 0;
+}
+
+bool String::operator<=(const String& rhs) const
+{
+	return std::strcmp(string, rhs.string) <= 0;
+}
+
+bool String::operator>=(const String& rhs) const
+{
+	return std::strcmp(string, rhs.string) >= 0;
 }
 
 bool String::operator!=(const String& rhs) const
@@ -179,9 +226,9 @@ String String::substr(size_t pos, size_t count)const
 		count = length - pos;
 	}
 	char* copy = new char[count + 1];
-	strncpy(copy, (string) + pos, count);
+	strncpy(copy, (string)+pos, count);
 	copy[count] = '\0';
-	String result(copy, count + 1);
+	String result(copy);
 	delete[]copy;
 	return result;
 }
@@ -218,7 +265,7 @@ void String::replace(size_t pos, size_t count, const String& rhs)
 {
 	if (pos >= length)
 	{
-		throw std::out_of_range("pos is too big");
+		throw std::out_of_range("Replace pos is too big");
 	}
 	else if (length - pos < count)
 	{
@@ -237,7 +284,7 @@ String& String::erase(size_t pos)
 {
 	if (pos >= length)
 	{
-		throw std::out_of_range("position is too big");
+		throw std::out_of_range("Erase position is too big");
 	}
 	(*this)[pos] = '\0';
 	length = pos;
@@ -298,4 +345,12 @@ size_t String::count(char ch) const
 		}
 	}
 	return counter;
+}
+
+char& String::at(size_t pos)
+{
+	if (pos >= length) {
+		throw std::out_of_range("At index is too big");
+	}
+	return string[pos];
 }
