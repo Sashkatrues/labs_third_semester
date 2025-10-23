@@ -12,22 +12,28 @@ private:
 	char* string;
 public:
 	String();
-	String(const char* str, size_t len);
-	//String(const char* str);
-	String(const String&);
 	~String();
+	String(char ch);
+	String(const char* str);
+	String(const String&);
 	String& operator=(const String& rhs);
 	String& operator=(const char* rhs);
+	String& operator=(char ch);
 
 	String operator+(const String&) const;
+	String operator+=(const String&) const;
+	friend String operator+(const char*, const String&);
+	friend String operator+=(const char* lhs, const String& rhs);
 	bool operator==(const String& rhs) const;
 	bool operator>(const String& rhs) const;
 	bool operator<(const String& rhs) const;
+	bool operator<=(const String& rhs) const;
+	bool operator>=(const String& rhs) const;
 	bool operator!=(const String& rhs) const;
 	char& operator[](size_t pos)const;
 	friend std::ostream& operator << (std::ostream& cout, const String& a);
 
-	size_t size()const;
+	size_t size() const;
 	bool empty() const;
 	void clear();
 	void pop_back();
@@ -46,5 +52,6 @@ public:
 	void replace(size_t pos, size_t count, const String& tmp);
 	char* c_str();
 	size_t count(char ch) const;
+	char& at(size_t pos);
 };
 #endif
