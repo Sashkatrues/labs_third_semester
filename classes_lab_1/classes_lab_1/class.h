@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #ifndef CLASS
 #define CLASS
 
@@ -12,40 +11,54 @@ private:
 public:
     Complex();
     ~Complex();
-    Complex(double r, double i);
+    Complex(const double r, const double i);
     Complex(const Complex& other);
+    Complex(Complex&& other) noexcept;
 
     Complex& operator=(const Complex& other);
+    Complex& operator=(Complex&& other) noexcept;
     Complex copy(const Complex& other);
 
-    Complex IntToComplex(int32_t num) const;
+    Complex IntToComplex(const double num) const;
 
     Complex operator+(const Complex& other) const;
-    Complex operator+(int32_t num);
-    friend Complex operator+(int32_t lhs, const Complex& rhs);
+    Complex operator+(const double num);
+    friend Complex operator+(const double lhs, const Complex& rhs);
+
     Complex operator-(const Complex& other) const;
-    Complex operator-(int32_t num);
-    friend Complex operator-(int32_t lhs, const Complex& rhs);
+    Complex operator-(const double num);
+    friend Complex operator-(const double lhs, const Complex& rhs);
+
     Complex operator*(const Complex& other) const;
-    Complex operator*(int32_t num);
-    friend Complex operator*(int32_t lhs, const Complex& rhs);
+    Complex operator*(const double num);
+    friend Complex operator*(const double lhs, const Complex& rhs);
+
     Complex operator/(const Complex& other) const;
-    Complex operator/(int32_t num);
-    friend Complex operator/(int32_t lhs, const Complex& rhs);
+    Complex operator/(const double num);
+    friend Complex operator/(const double lhs, const Complex& rhs);
+
     Complex& operator+=(const Complex& other);
-    Complex operator+=(int32_t num);
+    Complex operator+=(const double num);
+
     Complex& operator-=(const Complex& other);
-    Complex operator-=(int32_t num);
+    Complex operator-=(const double num);
+
     Complex& operator*=(const Complex& other);
-    Complex operator*=(int32_t num);
+    Complex operator*=(const double num);
+
     Complex& operator/=(const Complex& other);
-    Complex operator/=(int32_t num);
+    Complex operator/=(const double num);
 
     Complex operator-() const;
 
+    Complex& operator++();
+    Complex operator++(int);
+    Complex& operator--();
+    Complex operator--(int);
+
     bool operator==(const Complex& other) const;
     bool operator!=(const Complex& other) const;
-    int32_t CompareModule(const Complex& other) const;
+    int32_t CompareAbs(const Complex& other) const;
     bool operator<(const Complex& other) const;
     bool operator<=(const Complex& other) const;
     bool operator>(const Complex& other) const;
@@ -53,11 +66,19 @@ public:
 
     double getReal() const;
     double getImag() const;
+    void setReal(double r);
+    void setImag(double i);
 
     friend std::ostream& operator<<(std::ostream& fout, const Complex& c);
     friend std::istream& operator>>(std::istream& fin, Complex& c);
 
-    double module() const;
+    double abs() const;
+    Complex conj() const;
+    double norm() const;
+
+    //double arg() const;
+    //Complex pow(double n) const;
+    //Complex root(int32_t n) const;
 };
 
 #endif
