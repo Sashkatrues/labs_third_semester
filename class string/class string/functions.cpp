@@ -40,6 +40,14 @@ String::String(const String& rhs)
 	std::strcpy(string, rhs.string);
 }
 
+String::String(String&& other)noexcept
+{
+	string = other.string;
+	length = other.length;
+	other.string = NULL;
+	other.length = 0;
+}
+
 String& String::operator=(const char* rhs)
 {
 	if (rhs == NULL)
@@ -85,6 +93,19 @@ String& String::operator=(char ch)
 	length = 1;
 	string[0] = ch;
 	string[1] = '\0';
+	return *this;
+}
+
+String& String::operator=(String&& other) noexcept
+{
+	if (this != &other)
+	{
+		delete[] string;
+		string = other.string;
+		length = other.length;
+		other.string = NULL;
+		other.length = 0;
+	}
 	return *this;
 }
 
@@ -162,6 +183,26 @@ std::ostream& operator << (std::ostream& cout, const String& a)
 	return cout;
 }
 
+String& String::copy(const String& rhs)
+{
+	*this = rhs;
+	return *this;
+}
+
+char& String::front()
+{
+	return string[0];
+}
+
+char& String::back()
+{
+	if (empty()) {
+		throw std::out_of_range("back: empty string");
+	}
+	return string[length - 1];
+}
+
+
 bool String::empty() const
 {
 	return length == 0;
@@ -177,6 +218,36 @@ void String::clear()
 size_t String::size()const
 {
 	return length;
+}
+
+//size_t String::max_size() const {
+//	return SIZE_MAX - 2;
+//}
+
+void String::reserve(size_t new_len)
+{
+
+	if (new_len <= length)
+	{
+		return;
+	}
+	char* new_string = new char[new_len + 1];
+	if (string)
+	{
+		std::strcpy(new_string, string);
+		string = NULL;
+	}
+	else
+	{
+		new_string[0] = '\0';
+	}
+	string = new_string;
+	length = new_len;
+}
+
+size_t String::capacity() const
+{
+	return length + 1;
 }
 
 size_t String::find(const String& rhs)const
@@ -219,7 +290,7 @@ String String::substr(size_t pos, size_t count)const
 {
 	if (pos >= length)
 	{
-		throw std::out_of_range("position is too big");
+		throw std::out_of_range("substr position is too big");
 	}
 	else if (length - pos < count)
 	{
@@ -265,7 +336,7 @@ void String::replace(size_t pos, size_t count, const String& rhs)
 {
 	if (pos >= length)
 	{
-		throw std::out_of_range("Replace pos is too big");
+		throw std::out_of_range("replace pos is too big");
 	}
 	else if (length - pos < count)
 	{
@@ -291,45 +362,86 @@ String& String::erase(size_t pos)
 	return *this;
 }
 
+String& String::erase(size_t index, size_t count)
+{
+	if (index > length)
+	{
+		throw std::out_of_range("Erase index is too big");
+	}
+	if (count >= length - index)
+	{
+		length = index;
+		string[length] = '\0';
+		return *this;
+	}
+	else
+	{
+		for (size_t i = index; i <= length - count; ++i)
+		{
+			string[i] = string[i + count];
+		}
+		length -= count;
+		return *this;
+	}
+}
+
 void String::push_back(char ch)
 {
-	(*this)[length++] = ch;
-	(*this)[length] = '\0';
+	string[length++] = ch;
+	string[length++] = '\0';
 }
 
 void String::pop_back()
 {
-	(*this)[--length] = '\0';
+	if (length == 0 || string == NULL)
+	{
+		return;
+	}
+	string[length - 1] = '\0';
 }
 
-void String::resize(size_t n, char ch)
+void String::swap(String& other)
 {
-	length = n + 1;
-	if (n >= length)
-	{
-		(*this).append(n - length, ch);
-	}
-	else
-	{
-		(*this).erase(n);
-	}
+	std::swap(string, other.string);
+	std::swap(length, other.length);
 }
 
-String& String::append(size_t n, char ch)
+void String::resize(size_t count, char ch)
 {
-	for (size_t i{}; i < n; ++i)
+	if (count > length)
 	{
-		(*this).push_back(ch);
+		reserve(count + 1);
+		for (uint64_t i = length; i < count; ++i)
+		{
+			string[i] = ch;
+		}
 	}
+	length = count;
+	string[length] = '\0';
+}
+
+String& String::append(const char* str)
+{
+	size_t strLen = std::strlen(str);
+	if (strLen == 0)
+	{
+		return *this;
+	}
+
+	reserve(length + strLen + 1);
+
+	for (size_t i = 0; i < strLen; ++i)
+	{
+		string[length + i] = str[i];
+	}
+
+	length += strLen;
+	string[length] = '\0';
+
 	return *this;
 }
 
-String& String::append(const String& rhs)
-{
-	return (*this) = (*this) + rhs;
-}
-
-char* String::c_str()
+const char* String::c_str()
 {
 	return string;
 }
@@ -349,7 +461,8 @@ size_t String::count(char ch) const
 
 char& String::at(size_t pos)
 {
-	if (pos >= length) {
+	if (pos >= length)
+	{
 		throw std::out_of_range("At index is too big");
 	}
 	return string[pos];
