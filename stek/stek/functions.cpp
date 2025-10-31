@@ -112,37 +112,52 @@ bool isBracketRight(const std::string& str)
 	return stack.isEmpty();
 }
 
-void sortTrain(const std::string& str)
+std::string Stack::sortTrain(const std::string& str)
 {
 	Stack stack(str.size());
+	std::string string;
+	size_t i{};
 
 	for (char ch : str) {
-		switch (ch) {
-		case '(':
-		case '[':
-		case '{':
+		if (i == 0)
+		{
+			string += ch;
+			++i;
+		}
+		else if (string[i - 1] != ch && stack.isEmpty())
+		{
+			string += ch;
+			++i;
+		}
+		else if ((!stack.isEmpty()) && stack.peek() != string[i - 1])
+		{
+			string += stack.peek();
+			stack.pop();
+			++i;
+			if (string[i - 1] == ch)
+			{
+				stack.push(ch);
+			}
+			else
+			{
+				string += ch;
+				++i;
+			}
+		}
+		else if (string[i - 1] == ch)
+		{
 			stack.push(ch);
-			break;
-
-		case ')':
-			if (stack.isEmpty() || stack.peek() != '(');
-			stack.pop();
-			break;
-
-		case ']':
-			if (stack.isEmpty() || stack.peek() != '[');
-			stack.pop();
-			break;
-
-		case '}':
-			if (stack.isEmpty() || stack.peek() != '{');
-			stack.pop();
-			break;
-
-		default:
-			break;
+		}
+		else
+		{
+			string += ch;
+			++i;
 		}
 	}
-
-	return stack.isEmpty();
+	while (!stack.isEmpty())
+	{
+		string += stack.peek();
+		stack.pop();
+	}
+	return string;
 }
