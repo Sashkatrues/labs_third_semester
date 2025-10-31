@@ -23,7 +23,7 @@ public:
 	int32_t peek();
 	bool isEmpty();
 	bool isFull();
+	std::string sortTrain(const std::string& str);
 };
 bool isBracketRight(const std::string& str);
-void sortTrain(const std::string& str);
 #endif
