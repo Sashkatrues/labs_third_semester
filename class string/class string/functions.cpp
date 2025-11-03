@@ -1,9 +1,8 @@
 #include "string.h"
 
-String::String()
-{
-	length = 0;
-	string = new char[length + 1] {'\0'};
+String::String() : length(0), capaci(1) {
+	string = new char[capaci];
+	string[0] = '\0';
 }
 
 String::~String()
@@ -11,55 +10,47 @@ String::~String()
 	delete[] string;
 }
 
-String::String(char ch)
-{
-	length = 1;
-	string = new char[length + 1];
+String::String(char ch) : length(1), capaci(2) {
+	string = new char[capaci];
 	string[0] = ch;
 	string[1] = '\0';
 }
 
-//String::String(const char* str, size_t len)
-//{
-//	length = len;
-//	string = new char[length + 1];
-//	std::strcpy(string, str);
-//}
-
-String::String(const char* str)
-{
+String::String(const char* str) {
 	length = std::strlen(str);
-	string = new char[length + 1];
+	capaci = length + 1;
+	string = new char[capaci];
 	std::strcpy(string, str);
 }
 
-String::String(const String& rhs)
-{
+String::String(const String& rhs) {
 	length = rhs.length;
-	string = new char[length + 1];
+	capaci = rhs.capaci;
+	string = new char[capaci];
 	std::strcpy(string, rhs.string);
 }
 
-String::String(String&& other)noexcept
-{
+String::String(String&& other) noexcept {
 	string = other.string;
 	length = other.length;
+	capaci = other.capaci;
 	other.string = NULL;
 	other.length = 0;
+	other.capaci = 0;
 }
 
 String& String::operator=(const char* rhs)
 {
 	if (rhs == NULL)
 	{
-		delete[] string;
-		string = NULL;
-		length = 0;
+		clear();
+		capaci = 1;
 		return *this;
 	}
 	delete[] string;
 	length = strlen(rhs);
-	string = new char[length + 1];
+	capaci = length + 1;
+	string = new char[capaci];
 	strcpy(string, rhs);
 	return *this;
 }
@@ -69,28 +60,20 @@ String& String::operator=(const String& rhs)
 	if (this != &rhs)
 	{
 		delete[] string;
-		if (rhs.string)
-		{
-			length = rhs.length;
-			string = new char[length + 1];
-			std::strcpy(string, rhs.string);
-		}
-		else
-		{
-			string = NULL;
-		}
+		length = rhs.length;
+		capaci = rhs.capaci;
+		string = new char[capaci];
+		std::strcpy(string, rhs.string);
 	}
 	return *this;
 }
 
 String& String::operator=(char ch)
 {
-	if (length < 1) {
-		delete[] string;
-		length = 1;
-		string = new char[length + 1];
-	}
+	delete[] string;
 	length = 1;
+	capaci = 2;
+	string = new char[capaci];
 	string[0] = ch;
 	string[1] = '\0';
 	return *this;
@@ -103,16 +86,18 @@ String& String::operator=(String&& other) noexcept
 		delete[] string;
 		string = other.string;
 		length = other.length;
-		other.string = NULL;
+		capaci = other.capaci;
+		other.string = nullptr;
 		other.length = 0;
+		other.capaci = 0;
 	}
 	return *this;
 }
-
 String String::operator+(const String& rhs) const
 {
 	size_t newLength = length + rhs.length;
-	char* newStr = new char[newLength + 1];
+	size_t newCapaci = newLength + 1;
+	char* newStr = new char[newCapaci];
 	std::strcpy(newStr, string);
 	std::strcat(newStr, rhs.string);
 	String result(newStr);
@@ -122,18 +107,26 @@ String String::operator+(const String& rhs) const
 
 String operator+(const char* lhs, const String& rhs)
 {
-	String str = lhs;
+	String str(lhs);
 	return str + rhs;
 }
 
-String String::operator+=(const String& rhs) const
+String& String::operator+=(const String& rhs)
 {
-	return *this + rhs;
+	if (length + rhs.length + 1 > capaci)
+	{
+		reserve(length + rhs.length + 1);
+	}
+	std::strcat(string, rhs.string);
+	length += rhs.length;
+	return *this;
 }
 
 String operator+=(const char* lhs, const String& rhs)
 {
-	return lhs + rhs;
+	String str(lhs);
+	str += rhs;
+	return str;
 }
 
 bool String::operator==(const String& rhs) const
@@ -177,8 +170,21 @@ char& String::operator[](size_t index) const
 	return string[index];
 }
 
+std::istream& operator>>(std::istream& in, String& s)
+{
+	s.clear();
+	char buffer[1024];
+	in >> buffer;
+	s = buffer;
+	return in;
+}
+
 std::ostream& operator << (std::ostream& cout, const String& a)
 {
+	if (a.string == NULL)
+	{
+		throw std::out_of_range("<<: no string");
+	}
 	cout << a.string;
 	return cout;
 }
@@ -199,7 +205,7 @@ char& String::back()
 	if (empty()) {
 		throw std::out_of_range("back: empty string");
 	}
-	return string[length - 1];
+	return string[length];
 }
 
 
@@ -210,9 +216,11 @@ bool String::empty() const
 
 void String::clear()
 {
-	delete[] string;
-	string = new char[1] {'\0'};
 	length = 0;
+	if (string)
+	{
+		string[0] = '\0';
+	}
 }
 
 size_t String::size()const
@@ -220,70 +228,64 @@ size_t String::size()const
 	return length;
 }
 
-//size_t String::max_size() const {
-//	return SIZE_MAX - 2;
-//}
-
-void String::reserve(size_t new_len)
+void String::reserve(size_t new_cap)
 {
-
-	if (new_len <= length)
-	{
-		return;
-	}
-	char* new_string = new char[new_len + 1];
+	if (new_cap <= capaci) return;
+	char* new_string = new char[new_cap];
 	if (string)
 	{
 		std::strcpy(new_string, string);
-		string = NULL;
+		delete[] string;
 	}
 	else
 	{
 		new_string[0] = '\0';
 	}
 	string = new_string;
-	length = new_len;
+	capaci = new_cap;
 }
 
 size_t String::capacity() const
 {
-	return length + 1;
+	return capaci;
 }
 
-size_t String::find(const String& rhs)const
+size_t String::find(const String& rhs) const
 {
-	if (strstr(string, rhs.string) == NULL)
-	{
+	if (!rhs.string || rhs.length == 0) {
 		return 0;
 	}
-	else
-	{
-		return length - strlen(strstr(string, rhs.string));
+	const char* pos = std::strstr(string, rhs.string);
+	if (!pos) {
+		return static_cast<size_t>(-1);
 	}
+	return static_cast<size_t>(pos - string);
 }
 
-size_t String::find_first_of(const String& rhs)const
+size_t String::find_first_of(const String& rhs) const
 {
-	if (strpbrk(string, rhs.string) == NULL)
-	{
-		return -1;
+	if (!rhs.string || rhs.length == 0) {
+		return static_cast<size_t>(-1);
 	}
-	else
-	{
-		return length - strlen(strpbrk(string, rhs.string));
+	const char* pos = std::strpbrk(string, rhs.string);
+	if (!pos) {
+		return static_cast<size_t>(-1);
 	}
+	return static_cast<size_t>(pos - string);
 }
 
-size_t String::find_last_of(const String& rhs)const
+size_t String::find_last_of(const String& rhs) const
 {
-	for (size_t i{}; i < rhs.length; ++i)
-	{
-		if (strrchr(string, rhs.string[i]))
-		{
-			return length - strlen(strrchr(string, rhs.string[i]));
+	if (!rhs.string || rhs.length == 0) {
+		return static_cast<size_t>(-1);
+	}
+	size_t last = static_cast<size_t>(-1);
+	for (size_t i = 0; i < length; ++i) {
+		if (std::strchr(rhs.string, string[i])) {
+			last = i;
 		}
 	}
-	return -1;
+	return last;
 }
 
 String String::substr(size_t pos, size_t count)const
@@ -292,12 +294,12 @@ String String::substr(size_t pos, size_t count)const
 	{
 		throw std::out_of_range("substr position is too big");
 	}
-	else if (length - pos < count)
+	else if (pos + count > length)
 	{
 		count = length - pos;
 	}
 	char* copy = new char[count + 1];
-	strncpy(copy, (string)+pos, count);
+	strncpy(copy, (string) + pos, count);
 	copy[count] = '\0';
 	String result(copy);
 	delete[]copy;
@@ -320,99 +322,120 @@ int String::compare(const String& rhs) const
 
 void String::insert(size_t pos, const String& rhs)
 {
-	if (pos > length)
-	{
-		throw std::out_of_range("insert position out of range\n");
+	if (pos > length) {
+		throw std::out_of_range("insert position out of range");
 	}
-	char* result = new char[length + rhs.length + 1];
+
+	size_t newLength = length + rhs.length;
+	if (newLength + 1 > capaci) {
+		reserve(newLength + 1);
+	}
+
+	char* result = new char[newLength + 1];
+
 	std::strncpy(result, string, pos);
-	std::strcpy(result + pos, rhs.string);
-	std::strcpy(result + pos + rhs.length, string + pos);
+	result[pos] = '\0';
+
+	std::strcat(result, rhs.string);
+
+	std::strcat(result, string + pos);
+
+	delete[] string;
 	string = result;
-	length += rhs.length;
+	length = newLength;
+	capaci = newLength + 1;
 }
 
 void String::replace(size_t pos, size_t count, const String& rhs)
 {
-	if (pos >= length)
-	{
+	if (pos > length) {
 		throw std::out_of_range("replace pos is too big");
 	}
-	else if (length - pos < count)
-	{
+	if (pos + count > length) {
 		count = length - pos;
 	}
-	char* bufer = new char[length - pos + 1];
-	strncpy(bufer, string, pos);
-	strcpy(bufer + pos, rhs.string);
-	strcat(bufer, string + pos + count);
-	string = NULL;
-	string = bufer;
-	length -= count - rhs.length;
+
+	size_t newLength = length - count + rhs.length;
+	if (newLength + 1 > capaci) {
+		reserve(newLength + 1);
+	}
+
+	char* buffer = new char[newLength + 1];
+
+	std::strncpy(buffer, string, pos);
+	buffer[pos] = '\0';
+
+	std::strcat(buffer, rhs.string);
+
+	std::strcat(buffer, string + pos + count);
+
+	delete[] string;
+	string = buffer;
+	length = newLength;
+	capaci = newLength + 1;
 }
 
 String& String::erase(size_t pos)
 {
-	if (pos >= length)
-	{
+	if (pos >= length) {
 		throw std::out_of_range("Erase position is too big");
 	}
-	(*this)[pos] = '\0';
+
+	string[pos] = '\0';
 	length = pos;
 	return *this;
 }
 
 String& String::erase(size_t index, size_t count)
 {
-	if (index > length)
-	{
+	if (index > length) {
 		throw std::out_of_range("Erase index is too big");
 	}
-	if (count >= length - index)
-	{
+
+	if (count >= length - index) {
 		length = index;
 		string[length] = '\0';
-		return *this;
 	}
-	else
-	{
-		for (size_t i = index; i <= length - count; ++i)
-		{
-			string[i] = string[i + count];
-		}
+	else {
+		std::strcpy(string + index, string + index + count);
 		length -= count;
-		return *this;
 	}
+
+	return *this;
 }
 
 void String::push_back(char ch)
 {
+	if (length + 1 >= capaci) {
+		reserve(capaci * 2);
+	}
 	string[length++] = ch;
-	string[length++] = '\0';
+	string[length] = '\0';
 }
 
 void String::pop_back()
 {
-	if (length == 0 || string == NULL)
-	{
-		return;
+	if (empty()) {
+		throw std::out_of_range("pop_back: empty string");
 	}
-	string[length - 1] = '\0';
+	--length;
+	string[length] = '\0';
 }
 
 void String::swap(String& other)
 {
 	std::swap(string, other.string);
 	std::swap(length, other.length);
+	std::swap(capaci, other.capaci);
 }
 
 void String::resize(size_t count, char ch)
 {
-	if (count > length)
-	{
-		reserve(count + 1);
-		for (uint64_t i = length; i < count; ++i)
-		{
+	if (count > length) {
+		if (count + 1 > capaci) {
+			reserve(count + 1);
+		}
+		for (size_t i = length; i < count; ++i) {
 			string[i] = ch;
 		}
 	}
@@ -423,36 +446,35 @@ void String::resize(size_t count, char ch)
 String& String::append(const char* str)
 {
 	size_t strLen = std::strlen(str);
-	if (strLen == 0)
-	{
+	if (strLen == 0) {
 		return *this;
 	}
 
-	reserve(length + strLen + 1);
-
-	for (size_t i = 0; i < strLen; ++i)
-	{
-		string[length + i] = str[i];
+	if (length + strLen + 1 > capaci) {
+		reserve(length + strLen + 1);
 	}
 
+	std::strcpy(string + length, str);
 	length += strLen;
-	string[length] = '\0';
 
 	return *this;
 }
 
-const char* String::c_str()
+String& String::append(const String& str) {
+	append(str.string);
+	return *this;
+}
+
+const char* String::c_str() const
 {
 	return string;
 }
 
 size_t String::count(char ch) const
 {
-	size_t counter{};
-	for (size_t i{}; i < length; ++i)
-	{
-		if (string[i] == ch)
-		{
+	size_t counter = 0;
+	for (size_t i = 0; i < length; ++i) {
+		if (string[i] == ch) {
 			++counter;
 		}
 	}
@@ -461,9 +483,16 @@ size_t String::count(char ch) const
 
 char& String::at(size_t pos)
 {
-	if (pos >= length)
-	{
-		throw std::out_of_range("At index is too big");
+	if (pos >= length) {
+		throw std::out_of_range("at: index is out of range");
+	}
+	return string[pos];
+}
+
+const char& String::at(size_t pos) const
+{
+	if (pos >= length) {
+		throw std::out_of_range("at: index is out of range");
 	}
 	return string[pos];
 }
