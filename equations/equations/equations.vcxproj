@@ -132,6 +132,9 @@
     <ClInclude Include="linear.h" />
     <ClInclude Include="quadratic.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="equations.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

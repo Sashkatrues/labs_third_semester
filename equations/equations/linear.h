@@ -16,8 +16,8 @@ public:
 	Linear& operator =(const Linear&);
 	Linear& operator =(Linear&&) noexcept;
 
-	void print() override;
-	void solve() override;
+	void print(std::ostream&) override;
+	void solve(std::ostream&) override;
 };
 
 #endif

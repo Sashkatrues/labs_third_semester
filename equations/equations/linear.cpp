@@ -1,6 +1,12 @@
 #include "linear.h"
 
-Linear::Linear(double c_, double d_) : c(c_), d(d_) {}
+Linear::Linear(double c_, double d_) : c(c_), d(d_)
+{
+	if (c == 0)
+	{
+		throw std::domain_error("not linear equation, because c = 0");
+	}
+}
 
 Linear::~Linear() {}
 
@@ -34,35 +40,35 @@ Linear& Linear::operator=(Linear&& other) noexcept
 	return *this;
 }
 
-void Linear::print()
+void Linear::print(std::ostream& out)
 {
 	if (c == 0 && d == 0)
 	{
-		std::cout << "0\n";
+		out << "0\n";
 		return;
 	}
 	if (c != 0)
 	{
 		if (c == 1)
-			std::cout << "x";
+			out << "x";
 		else if (c == -1)
-			std::cout << "-x";
+			out << "-x";
 		else
-			std::cout << c << "x";
+			out << c << "x";
 	}
 	if (d != 0)
 	{
-		std::cout << '+' << d;
+		out << '+' << d;
 	}
-	std::cout << '\n';
+	out << '\n';
 }
 
-void Linear::solve()
+void Linear::solve(std::ostream& out)
 {
     if (c == 0)
     {
         throw std::domain_error("error, c is 0");
     }
     double x = -d / c;
-    std::cout << "x = " << x << '\n';
+    out << "x = " << x << '\n';
 }

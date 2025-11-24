@@ -17,7 +17,7 @@ public:
 	Quadratic& operator =(const Quadratic&);
 	Quadratic& operator =(Quadratic&&) noexcept;
 
-	void print() override;
-	void solve() override;
+	void print(std::ostream&) override;
+	void solve(std::ostream&) override;
 };
 #endif

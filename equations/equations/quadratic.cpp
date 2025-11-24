@@ -1,6 +1,12 @@
 #include "quadratic.h"
 
-Quadratic::Quadratic(double c_, double d_, double e_) : c(c_), d(d_), e(e_) {}
+Quadratic::Quadratic(double c_, double d_, double e_) : c(c_), d(d_), e(e_)
+{
+	if (c == 0)
+	{
+		throw std::domain_error("not quadraic equation, because c = 0");
+	}
+}
 
 Quadratic::~Quadratic() {}
 
@@ -38,39 +44,39 @@ Quadratic& Quadratic::operator=(Quadratic&& other) noexcept
 	return *this;
 }
 
-void Quadratic::print()
+void Quadratic::print(std::ostream& out)
 {
 	if (c == 0 && d == 0 && e == 0)
 	{
-		std::cout << "0\n";
+		out << "0\n";
 		return;
 	}
 	if (c != 0)
 	{
 		if (c == 1)
-			std::cout << "x^2";
+			out << "x^2";
 		else if (c == -1)
-			std::cout << "-x^2";
+			out << "-x^2";
 		else
-			std::cout << c << "x^2";
+			out << c << "x^2";
 	}
 	if (d != 0)
 	{
 		if (d == 1)
-			std::cout << "+x";
+			out << "+x";
 		else if (d == -1)
-			std::cout << "-x";
+			out << "-x";
 		else
-			std::cout << '+' << d << "x";
+			out << '+' << d << "x";
 	}
 	if (e != 0)
 	{
-		std::cout << '+' << e;
+		out << '+' << e;
 	}
-	std::cout << '\n';
+	out << '\n';
 }
 
-void Quadratic::solve()
+void Quadratic::solve(std::ostream& out)
 {
 	if (c == 0)
 	{
@@ -84,12 +90,12 @@ void Quadratic::solve()
 	else if (D == 0)
 	{
 		double x = -d / (2 * c);
-		std::cout << "x = " << x << '\n';
+		out << "x = " << x << '\n';
 	}
 	else
 	{
 		double x1 = (-d + std::sqrt(D)) / (2 * c);
 		double x2 = (-d - std::sqrt(D)) / (2 * c);
-		std::cout << "x1 = " << x1 << "; x2 = " << x2 << '\n';
+		out << "x1 = " << x1 << "; x2 = " << x2 << '\n';
 	}
 }
