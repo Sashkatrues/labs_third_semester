@@ -140,25 +140,24 @@ bool String::operator<(const String& rhs) const
 	return std::strcmp(string, rhs.string) < 0;
 }
 
+bool String::operator!=(const String& rhs) const
+{
+	return !(*this == rhs);
+}
 
 bool String::operator>(const String& rhs) const
 {
-	return std::strcmp(string, rhs.string) > 0;
+	return rhs < *this;
 }
 
 bool String::operator<=(const String& rhs) const
 {
-	return std::strcmp(string, rhs.string) <= 0;
+	return !(rhs < *this);
 }
 
 bool String::operator>=(const String& rhs) const
 {
-	return std::strcmp(string, rhs.string) >= 0;
-}
-
-bool String::operator!=(const String& rhs) const
-{
-	return std::strcmp(string, rhs.string) != 0;
+	return !(*this < rhs);
 }
 
 char& String::operator[](size_t index) const
@@ -170,23 +169,23 @@ char& String::operator[](size_t index) const
 	return string[index];
 }
 
-std::istream& operator>>(std::istream& in, String& s)
+std::istream& operator>>(std::istream& fin, String& s)
 {
 	s.clear();
 	char buffer[1024];
-	in >> buffer;
+	fin >> buffer;
 	s = buffer;
-	return in;
+	return fin;
 }
 
-std::ostream& operator << (std::ostream& cout, const String& a)
+std::ostream& operator << (std::ostream& fout, const String& a)
 {
 	if (a.string == NULL)
 	{
 		throw std::out_of_range("<<: no string");
 	}
-	cout << a.string;
-	return cout;
+	fout << a.string;
+	return fout;
 }
 
 String& String::copy(const String& rhs)
@@ -252,11 +251,13 @@ size_t String::capacity() const
 
 size_t String::find(const String& rhs) const
 {
-	if (!rhs.string || rhs.length == 0) {
+	if (!rhs.string || rhs.length == 0)
+	{
 		return 0;
 	}
 	const char* pos = std::strstr(string, rhs.string);
-	if (!pos) {
+	if (!pos)
+	{
 		return static_cast<size_t>(-1);
 	}
 	return static_cast<size_t>(pos - string);
@@ -299,7 +300,7 @@ String String::substr(size_t pos, size_t count)const
 		count = length - pos;
 	}
 	char* copy = new char[count + 1];
-	strncpy(copy, (string) + pos, count);
+	std::strncpy(copy, (string) + pos, count);
 	copy[count] = '\0';
 	String result(copy);
 	delete[]copy;

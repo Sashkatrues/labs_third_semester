@@ -8,7 +8,7 @@
 template <class TInfo>
 class TDeque
 {
-protected:
+private:
 	struct TDequeItem
 	{
 		TInfo Info;

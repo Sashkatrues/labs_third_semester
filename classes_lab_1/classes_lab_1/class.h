@@ -9,9 +9,9 @@ private:
     double real;
     double imag;
 public:
-    Complex();
+   // Complex();
     ~Complex();
-    Complex(const double r, const double i);
+    Complex(const double r = 0, const double i = 0);
     Complex(const Complex& other);
     Complex(Complex&& other) noexcept;
 

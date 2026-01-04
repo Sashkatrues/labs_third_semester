@@ -33,11 +33,6 @@ Stack::Stack(Stack&& other) : size(other.size), top(other.top)
 	other.top = 0;
 	arr = other.arr;
 	other.arr = NULL;
-	/*arr = new int32_t[size];
-	for (int32_t i{}; i < top; ++i)
-	{
-		arr[i] = other.arr[i];
-	}*/
 }
 
 void Stack::push(int32_t num)
@@ -119,22 +114,34 @@ std::string Stack::sortTrain(const std::string& str)
 	size_t i{};
 
 	for (char ch : str) {
-		if (i == 0)
+		if (ch == 'B' || ch == 'W')
 		{
-			string += ch;
-			++i;
-		}
-		else if (string[i - 1] != ch && stack.isEmpty())
-		{
-			string += ch;
-			++i;
-		}
-		else if ((!stack.isEmpty()) && stack.peek() != string[i - 1])
-		{
-			string += stack.peek();
-			stack.pop();
-			++i;
-			if (string[i - 1] == ch)
+			if (i == 0)
+			{
+				string += ch;
+				++i;
+			}
+			else if (string[i - 1] != ch && stack.isEmpty())
+			{
+				string += ch;
+				++i;
+			}
+			else if ((!stack.isEmpty()) && stack.peek() != string[i - 1])
+			{
+				string += stack.peek();
+				stack.pop();
+				++i;
+				if (string[i - 1] == ch)
+				{
+					stack.push(ch);
+				}
+				else
+				{
+					string += ch;
+					++i;
+				}
+			}
+			else if (string[i - 1] == ch)
 			{
 				stack.push(ch);
 			}
@@ -143,15 +150,6 @@ std::string Stack::sortTrain(const std::string& str)
 				string += ch;
 				++i;
 			}
-		}
-		else if (string[i - 1] == ch)
-		{
-			stack.push(ch);
-		}
-		else
-		{
-			string += ch;
-			++i;
 		}
 	}
 	while (!stack.isEmpty())

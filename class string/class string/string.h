@@ -18,21 +18,24 @@ public:
     String(const char* str);
     String(const String&);
     String(String&& other) noexcept;
+
     String& operator=(const String& rhs);
     String& operator=(const char* rhs);
     String& operator=(char ch);
     String& operator=(String&& other) noexcept;
+
     String operator+(const String&) const;
     friend String operator+(const char*, const String&);
     String& operator+=(const String&);
     friend String operator+=(const char* lhs, const String& rhs);
     bool operator==(const String& rhs) const;
-    bool operator>(const String& rhs) const;
     bool operator<(const String& rhs) const;
+    bool operator!=(const String& rhs) const;
+    bool operator>(const String& rhs) const;
     bool operator<=(const String& rhs) const;
     bool operator>=(const String& rhs) const;
-    bool operator!=(const String& rhs) const;
     char& operator[](size_t pos) const;
+
     friend std::istream& operator>>(std::istream& in, String& s);
     friend std::ostream& operator<<(std::ostream& cout, const String& a);
 

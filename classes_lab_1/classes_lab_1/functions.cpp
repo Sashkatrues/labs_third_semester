@@ -1,10 +1,10 @@
 #include "class.h"
 
-Complex::Complex()
-{
-	real = 0.0;
-	imag = 0.0;
-}
+//Complex::Complex()
+//{
+//	real = 0.0;
+//	imag = 0.0;
+//}
 
 Complex::~Complex()
 {
